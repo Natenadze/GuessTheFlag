@@ -12,7 +12,7 @@ struct ContentView: View {
     @State private var showingScore = false
     @State private var scoreTitle = ""
     @State private var totalScore = 0
-    @State private var questionNumber = 1
+    @State private var questionNumber = 0
     
     @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Nigeria", "Poland", "Spain", "UK", "US"].shuffled()
     @State private var correctAnswer = Int.random(in: 0...2)
@@ -42,10 +42,8 @@ struct ContentView: View {
                     Button {
                         flagTapped(number)
                     } label: {
-                        Image(countries[number])
-                            .renderingMode(.original)
-                            .clipShape(Capsule())
-                            .shadow(radius: 10)
+                        FlagImage(number: number)
+                        
                     }
                 }
                 // ---
@@ -81,37 +79,52 @@ struct ContentView: View {
     // MARK: - Methods
     
     func flagTapped(_ number: Int) {
+        questionNumber += 1
+        var answerWasRight = false
         
-        switch questionNumber {
-        case 8:
-            scoreTitle = "Game Over"
+        if number == correctAnswer {
             totalScore += 1
-        default:
-            if number == correctAnswer {
-                scoreTitle = "Correct"
-                totalScore += 1
-            } else {
-                scoreTitle = "Wrong"
-            }
+            answerWasRight = true
         }
+        
+        if questionNumber == 8 {
+            scoreTitle = "Game Over"
+        } else {
+            scoreTitle =  answerWasRight ? "Correct" : "Wrong"
+        }
+        
         showingScore = true
-        
-        
     }
+    
     
     // MARK: -
     
     func askQuestion() {
-        if questionNumber == 8 {
-            totalScore = 0
-        }
-        questionNumber += 1
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        
+        if questionNumber == 8 {
+            totalScore = 0
+            questionNumber = 0
+        }
     }
     
 }
 
+
+extension ContentView {
+    
+    // MARK: - Helper
+    func FlagImage(number: Int) -> some View {
+        Image(countries[number])
+            .renderingMode(.original)
+            .clipShape(Capsule())
+            .shadow(radius: 10)
+    }
+}
+
+
+// MARK: -
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
