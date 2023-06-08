@@ -9,6 +9,9 @@ import SwiftUI
 
 struct ContentView: View {
     
+    @State private var rotationAngles: [Angle] = Array(repeating: .zero, count: 3)
+    @State private var buttonOpacity: [Double] = Array(repeating: 1, count: 3)
+    
     @State private var showingScore = false
     @State private var scoreTitle = ""
     @State private var totalScore = 0
@@ -40,11 +43,26 @@ struct ContentView: View {
                 // Button Flags
                 ForEach(0..<3) { number in
                     Button {
+                        withAnimation(.easeInOut(duration: 0.6)) {
+                            rotationAngles[number] += .degrees(360)
+                            // Way 1 (You dont get syntax)
+//                            buttonOpacity = buttonOpacity.enumerated().map { $0.offset == index ? 1.0 : 0.25 }
+                          
+                            // Way 2 (Too simple?)
+//                            buttonOpacity.indices.forEach{buttonOpacity[$0] = 0.25}
+//                            buttonOpacity[index] = 1
+                            
+                            // Way 3 (Looks ok)
+                            buttonOpacity.indices.forEach { buttonOpacity[$0] = ($0 == number) ? 1.0 : 0.25 }
+                        }
+                        
                         flagTapped(number)
                     } label: {
                         FlagImage(number: number)
-                        
                     }
+                    .rotation3DEffect(rotationAngles[number], axis: (x: 0, y: 1, z: 0))
+                    .opacity(buttonOpacity[number])
+                    .scaleEffect(buttonOpacity[number] == 1.0 ? 1.0 : 0.8)  // Scale other buttons
                 }
                 // ---
                 
@@ -93,7 +111,10 @@ struct ContentView: View {
             scoreTitle =  answerWasRight ? "Correct" : "Wrong"
         }
         
-        showingScore = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            showingScore = true
+        }
+        
     }
     
     
@@ -107,6 +128,9 @@ struct ContentView: View {
             totalScore = 0
             questionNumber = 0
         }
+        
+        // give buttons original opacity
+        buttonOpacity = Array(repeating: 1.0, count: 3)
     }
     
 }
